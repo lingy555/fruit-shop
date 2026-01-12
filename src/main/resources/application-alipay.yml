@@ -1,0 +1,28 @@
+# 支付宝沙箱配置
+alipay:
+  # 沙箱应用ID（需要在支付宝开放平台申请）
+  app-id: 9021000159609849
+  
+  # 商户私钥（RSA2格式）
+  private-key: |
+    MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCKWApuqfwId+ylN3faPZNE5VmLEFuEqpk5f1DZ2/XeuFw1lUOAsc78+o/hGEXottXeZi+Qx+9vRjzdZcKuJG/nTnxS+vPfhtj2U5i9cspBoE9raQKRNOvVXl1cCYNPE+XeSURsw5ov7GrQvlAA6DJVgityE6JZbXxhDCLMmPOHRKCGWb2T2ozf/yJje+8O0Hpf8qqfJkGnA6SfRcxZ/R+/hk8ddBLSBGwZyOj1K8nNLDQg11fI6h507AvgJAinTS5edlW6o8T5JDRdO9Fu5fnLvtHafJ2ziXRkDnc8kjFmW6mxrnlSKzry5Jq+Eq1xnKI8wSkOS2aT6KLn1R0hrX55AgMBAAECggEAc04kC85z+R7zR1Uu+OA/gbni4wxUKwQBx7F80sgJaoOgnyx0YaxRh/rSttsDUY4qPT5QQMzTnJwfGKy7EWffORvqdUMixlhfNxfAA47MUtxptW2FrT89nM4U5CQtpFhCS/4nILv7JBxZfvhQOCFP6oMe8Oq6cuzVMRHrYznMKB3ko/c+HIOUWkRc3E+sSle0b+rqdEgpwm/IYDKkF4bkivNqL04sOuOeWBJBM2nrjJDvWJwnN0JtsXDNBDVgUN247t9VE5RA4JAP76vTrS2nDJ+rvJC+73NNSdqpA1ZvQa5gxyVtVIe1t7MYrLdhSekFfs6eoaRfweYrJ1xVjxnmDQKBgQDjINUadIupakchPgZMI/BWP4BdIiO6/LModP3ZvGTI/YMIpPGujXBrWmNz5z3L7xCheyVPK7E//2rSAQRhljSB0kjZPG/XnRGDjqL81mMszGOP0lLUZfjNsgaYk1J/3ZmTzV5KkJ6T/5R09nXkt/BIy16FNmgqR5x6Hdg2zpFidwKBgQCb7gD+Md+eQwnXr1RZTcrdWugHtSJxK15i9di0G9Nv/w6PZYpsD8Atqoh78NDECVg7mpXwGKNNsWvrFq6p9RMZCow93Fjdic99pzwZLjJsXc220DAk0GIJ679Q6Hl9zV0D67LNUNDpj2dMSBeyWYnu6msEiZeTpZyZ4W2m6XXyjwKBgBD7T3Oe6yJLk+3kWUwwE7QfI1XTS6CbbDnGJYS2FUMB0V5AFuHaKWGdbHop+/DXewLX1j5JIgOK8U2qTc2OEXbzZgb4AdS5JaoUbBNDZD7hOUBzlUXUKfoXKW8W9MAirWzjmf0xOuoN3eew1be4GPsYWYTUQI2ItSZcPOI8J5qZAoGBAJTe1J/cKe1Ff94mjNd+SBKyOhkxvKJjj4fXxH+gmWuyDcqmXVPybb6rtAbw0cB4U38EheZm/3Kr06btTvEBBKzBv0dIWqeYbTtAMUaxLn77x+2kMnLTaOaj51JtwaB0MzwNCfawE+UJfsv7gHRMvD4YHPiGDOtwEGVyLmhPOMbNAoGACoLHKxe8a2o5+uHE9R1YIQdxi1ms6TwzCD+9gn3rGnveonhDW10ZzjiNwGNFNllxsM2DO9bnoLfN+azkBESR1DLQCCKEaM4mO66/7bRK9NAnXYgdl4WWIPVYgYLliX9JGWYUu6ZMzTLOSU356aK2QUcMoIfTpt/9MGs+xJKPriA=
+  # 支付宝公钥（RSA2格式）
+  public-key: |
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAilgKbqn8CHfspTd32j2TROVZixBbhKqZOX9Q2dv13rhcNZVDgLHO/PqP4RhF6LbV3mYvkMfvb0Y83WXCriRv5058Uvrz34bY9lOYvXLKQaBPa2kCkTTr1V5dXAmDTxPl3klEbMOaL+xq0L5QAOgyVYIrchOiWW18YQwizJjzh0Sghlm9k9qM3/8iY3vvDtB6X/KqnyZBpwOkn0XMWf0fv4ZPHXQS0gRsGcjo9SvJzSw0INdXyOoedOwL4CQIp00uXnZVuqPE+SQ0XTvRbuX5y77R2nyds4l0ZA53PJIxZlupsa55Uis68uSavhKtcZyiPMEpDktmk+ii59UdIa1+eQIDAQAB
+  # 支付宝网关地址（沙箱环境）
+  gateway-url: https://openapi-sandbox.dl.alipaydev.com/gateway.do
+  
+  # 签名算法
+  sign-type: RSA2
+  
+  # 字符编码
+  charset: UTF-8
+  
+  # 数据格式
+  format: json
+  
+  # 异步通知地址
+  notify-url: http://x954c475.natappfree.cc/api/payment/alipay/notify
+  
+  # 同步回调地址
+  return-url: http://localhost:3000/payment/return

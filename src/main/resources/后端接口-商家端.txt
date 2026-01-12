@@ -1,0 +1,1098 @@
+我来为你提供一个完整的水果商城系统**商家端**后端接口文档。商家端主要面向入驻商家管理自己的店铺、商品、订单等。
+
+# 水果商城系统 - 商家端接口文档
+
+## 1. 基础信息
+
+**Base URL**: `http://localhost:8080/api/merchant`
+
+**统一响应格式**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {},
+  "timestamp": 1640000000000
+}
+```
+
+**状态码说明**:
+
+* 200: 成功
+* 400: 请求参数错误
+* 401: 未登录/token过期
+* 403: 无权限访问
+* 404: 资源不存在
+* 500: 服务器内部错误
+
+---
+
+## 2. 商家认证模块
+
+### 2.1 商家注册申请
+
+* **URL**: `/auth/register`
+* **Method**: `POST`
+* **描述**: 商家提交入驻申请
+* **Request Body**:
+
+```json
+{
+  "shopName": "string (店铺名称)",
+  "contactName": "string (联系人)",
+  "contactPhone": "string (联系电话)",
+  "email": "string",
+  "businessLicense": "string (营业执照URL)",
+  "idCardFront": "string (身份证正面)",
+  "idCardBack": "string (身份证反面)",
+  "password": "string",
+  "verifyCode": "string (验证码)"
+}
+```
+
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "申请提交成功，请等待审核",
+  "data": {
+    "applicationId": 1001,
+    "status": "pending"
+  }
+}
+```
+
+### 2.2 商家登录
+
+* **URL**: `/auth/login`
+* **Method**: `POST`
+* **Request Body**:
+
+```json
+{
+  "account": "string (手机号或用户名)",
+  "password": "string"
+}
+```
+
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "登录成功",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "tokenExpire": 7200,
+    "merchantInfo": {
+      "merchantId": 1001,
+      "shopId": 10,
+      "shopName": "热带果园",
+      "contactName": "张经理",
+      "contactPhone": "13800138000",
+      "status": 1,
+      "shopStatus": 1
+    }
+  }
+}
+```
+
+### 2.3 退出登录
+
+* **URL**: `/auth/logout`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 2.4 修改密码
+
+* **URL**: `/auth/changePassword`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "oldPassword": "string",
+  "newPassword": "string"
+}
+```
+
+### 2.5 忘记密码
+
+* **URL**: `/auth/resetPassword`
+* **Method**: `POST`
+* **Request Body**:
+
+```json
+{
+  "phone": "13800138000",
+  "verifyCode": "123456",
+  "newPassword": "string"
+}
+```
+
+---
+
+## 3. 店铺管理模块
+
+### 3.1 店铺信息
+
+* **URL**: `/shop/info`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "shopId": 10,
+    "shopName": "热带果园",
+    "logo": "url",
+    "banner": "url",
+    "description": "专营东南亚进口水果",
+    "province": "广东省",
+    "city": "深圳市",
+    "district": "南山区",
+    "address": "科技园北区",
+    "contactName": "张经理",
+    "contactPhone": "13800138000",
+    "businessHours": "08:00-22:00",
+    "status": 1,
+    "score": 4.9,
+    "productCount": 156,
+    "totalSales": 156800,
+    "fanCount": 3200,
+    "createTime": "2023-01-01 10:00:00",
+    "businessLicense": "url",
+    "qualifications": ["url1", "url2"]
+  }
+}
+```
+
+### 3.2 更新店铺信息
+
+* **URL**: `/shop/update`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "shopName": "string",
+  "logo": "string",
+  "banner": "string",
+  "description": "string",
+  "province": "string",
+  "city": "string",
+  "district": "string",
+  "address": "string",
+  "contactPhone": "string",
+  "businessHours": "string"
+}
+```
+
+### 3.3 店铺统计数据
+
+* **URL**: `/shop/statistics`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**: `dateType`: string (today/week/month/year)
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "todayData": {
+      "orderCount": 50,
+      "orderAmount": 5680.50,
+      "payOrderCount": 45,
+      "payOrderAmount": 5200.00,
+      "visitCount": 1280,
+      "newFanCount": 15
+    },
+    "totalData": {
+      "totalOrderCount": 5680,
+      "totalOrderAmount": 568000.00,
+      "totalProductCount": 156,
+      "totalFanCount": 3200
+    },
+    "trendData": [
+      {
+        "date": "2024-12-27",
+        "orderCount": 50,
+        "orderAmount": 5680.50,
+        "visitCount": 1280
+      }
+    ]
+  }
+}
+```
+
+### 3.4 营业状态设置
+
+* **URL**: `/shop/status`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "status": 1
+}
+```
+
+---
+
+## 4. 商品管理模块
+
+### 4.1 商品列表
+
+* **URL**: `/product/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int (默认1)
+  * `pageSize`: int (默认20)
+  * `categoryId`: long (分类ID)
+  * `status`: int (0下架/1上架/2待审核/3审核失败)
+  * `keyword`: string (商品名称)
+  * `sortBy`: string (createTime/sales/stock/price)
+  * `sortOrder`: string (asc/desc)
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 156,
+    "list": [
+      {
+        "productId": 1,
+        "productName": "泰国金枕榴莲",
+        "categoryId": 11,
+        "categoryName": "榴莲",
+        "image": "url",
+        "price": 89.90,
+        "originalPrice": 120.00,
+        "stock": 100,
+        "sales": 1520,
+        "status": 1,
+        "statusText": "已上架",
+        "score": 4.8,
+        "commentCount": 856,
+        "viewCount": 5600,
+        "createTime": "2024-12-01 10:00:00",
+        "updateTime": "2024-12-27 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+### 4.2 商品详情
+
+* **URL**: `/product/detail/{productId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "productId": 1,
+    "productName": "泰国金枕榴莲",
+    "categoryId": 11,
+    "categoryName": "榴莲",
+    "image": "url",
+    "images": ["url1", "url2", "url3"],
+    "videoUrl": "url",
+    "price": 89.90,
+    "originalPrice": 120.00,
+    "costPrice": 60.00,
+    "stock": 100,
+    "sales": 1520,
+    "unit": "个",
+    "weight": "3-4斤",
+    "description": "产地直发，新鲜香甜",
+    "detail": "<html>详情页HTML内容</html>",
+    "tags": ["新鲜", "包邮"],
+    "status": 1,
+    "specifications": [
+      {
+        "specId": 1,
+        "specName": "重量",
+        "options": ["3-4斤", "5-6斤"]
+      }
+    ],
+    "skuList": [
+      {
+        "skuId": 1,
+        "skuCode": "SKU001",
+        "price": 89.90,
+        "stock": 50,
+        "image": "url",
+        "specs": {"重量": "3-4斤"}
+      },
+      {
+        "skuId": 2,
+        "skuCode": "SKU002",
+        "price": 139.90,
+        "stock": 50,
+        "image": "url",
+        "specs": {"重量": "5-6斤"}
+      }
+    ],
+    "deliveryInfo": {
+      "freeShipping": true,
+      "shippingFee": 0,
+      "shippingTemplate": "默认运费模板"
+    },
+    "createTime": "2024-12-01 10:00:00"
+  }
+}
+```
+
+### 4.3 添加商品
+
+* **URL**: `/product/add`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "productName": "string",
+  "categoryId": 11,
+  "image": "string",
+  "images": ["string"],
+  "videoUrl": "string",
+  "price": 89.90,
+  "originalPrice": 120.00,
+  "costPrice": 60.00,
+  "stock": 100,
+  "unit": "个",
+  "weight": "3-4斤",
+  "description": "string",
+  "detail": "string (HTML)",
+  "tags": ["string"],
+  "specifications": [
+    {
+      "specName": "重量",
+      "options": ["3-4斤", "5-6斤"]
+    }
+  ],
+  "skuList": [
+    {
+      "skuCode": "string",
+      "price": 89.90,
+      "stock": 50,
+      "image": "string",
+      "specs": {"重量": "3-4斤"}
+    }
+  ],
+  "freeShipping": true,
+  "shippingFee": 0
+}
+```
+
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "商品添加成功，等待审核",
+  "data": {
+    "productId": 1
+  }
+}
+```
+
+### 4.4 更新商品
+
+* **URL**: `/product/update/{productId}`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**: 同添加商品
+
+### 4.5 删除商品
+
+* **URL**: `/product/delete/{productId}`
+* **Method**: `DELETE`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 4.6 批量上架/下架
+
+* **URL**: `/product/batchStatus`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "productIds": [1, 2, 3],
+  "status": 1
+}
+```
+
+### 4.7 更新库存
+
+* **URL**: `/product/updateStock`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "skuId": 1,
+  "stock": 100,
+  "type": "set"
+}
+```
+
+### 4.8 商品分类列表
+
+* **URL**: `/product/categories`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+
+---
+
+## 5. 订单管理模块
+
+### 5.1 订单列表
+
+* **URL**: `/order/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int
+  * `pageSize`: int
+  * `status`: int (1待发货/2待收货/3已完成/4已取消/5退款中/6已退款)
+  * `keyword`: string (订单号/收货人/手机号)
+  * `startTime`: string (开始时间)
+  * `endTime`: string (结束时间)
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 500,
+    "statusCount": {
+      "waitDeliver": 30,
+      "waitReceive": 50,
+      "finished": 380,
+      "refunding": 5
+    },
+    "list": [
+      {
+        "orderId": 100001,
+        "orderNo": "O20241227120000001",
+        "userId": 1001,
+        "username": "张三",
+        "status": 1,
+        "statusText": "待发货",
+        "totalAmount": 259.70,
+        "shippingFee": 0,
+        "actualAmount": 239.70,
+        "paymentMethod": "alipay",
+        "paymentMethodText": "支付宝",
+        "remark": "请尽快发货",
+        "createTime": "2024-12-27 10:00:00",
+        "payTime": "2024-12-27 10:05:00",
+        "address": {
+          "receiverName": "张三",
+          "receiverPhone": "13800138000",
+          "fullAddress": "广东省深圳市南山区科技园南区A座"
+        },
+        "items": [
+          {
+            "orderItemId": 1,
+            "productId": 1,
+            "skuId": 1,
+            "productName": "泰国金枕榴莲",
+            "image": "url",
+            "price": 89.90,
+            "specs": "3-4斤",
+            "quantity": 2,
+            "subtotal": 179.80
+          }
+        ],
+        "canDeliver": true,
+        "canCancel": false
+      }
+    ]
+  }
+}
+```
+
+### 5.2 订单详情
+
+* **URL**: `/order/detail/{orderId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "orderId": 100001,
+    "orderNo": "O20241227120000001",
+    "userId": 1001,
+    "username": "张三",
+    "userPhone": "13800138000",
+    "status": 1,
+    "statusText": "待发货",
+    "totalAmount": 259.70,
+    "shippingFee": 0,
+    "couponDiscount": 20.00,
+    "actualAmount": 239.70,
+    "paymentMethod": "alipay",
+    "paymentMethodText": "支付宝",
+    "remark": "请尽快发货",
+    "createTime": "2024-12-27 10:00:00",
+    "payTime": "2024-12-27 10:05:00",
+    "deliverTime": null,
+    "receiveTime": null,
+    "finishTime": null,
+    "address": {
+      "receiverName": "张三",
+      "receiverPhone": "13800138000",
+      "province": "广东省",
+      "city": "深圳市",
+      "district": "南山区",
+      "detail": "科技园南区A座"
+    },
+    "items": [
+      {
+        "orderItemId": 1,
+        "productId": 1,
+        "skuId": 1,
+        "productName": "泰国金枕榴莲",
+        "image": "url",
+        "price": 89.90,
+        "specs": "3-4斤",
+        "quantity": 2,
+        "subtotal": 179.80,
+        "costPrice": 60.00,
+        "profit": 59.80
+      }
+    ],
+    "timeline": [
+      {
+        "time": "2024-12-27 10:05:00",
+        "status": "买家已付款"
+      },
+      {
+        "time": "2024-12-27 10:00:00",
+        "status": "买家下单"
+      }
+    ]
+  }
+}
+```
+
+### 5.3 发货
+
+* **URL**: `/order/deliver`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "orderId": 100001,
+  "expressCompany": "顺丰速运",
+  "expressNo": "SF1234567890"
+}
+```
+
+### 5.4 批量发货
+
+* **URL**: `/order/batchDeliver`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "deliverList": [
+    {
+      "orderId": 100001,
+      "expressCompany": "顺丰速运",
+      "expressNo": "SF1234567890"
+    }
+  ]
+}
+```
+
+### 5.5 修改运费
+
+* **URL**: `/order/updateShippingFee`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "orderId": 100001,
+  "shippingFee": 10.00
+}
+```
+
+### 5.6 商家备注
+
+* **URL**: `/order/updateRemark`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "orderId": 100001,
+  "merchantRemark": "VIP客户，优先发货"
+}
+```
+
+### 5.7 导出订单
+
+* **URL**: `/order/export`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "status": 1,
+  "startTime": "2024-12-01",
+  "endTime": "2024-12-27"
+}
+```
+
+---
+
+## 6. 退款/售后模块
+
+### 6.1 退款申请列表
+
+* **URL**: `/refund/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int
+  * `pageSize`: int
+  * `status`: int (1待处理/2已同意/3已拒绝/4退款中/5已完成/6已关闭)
+  * `keyword`: string
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 50,
+    "statusCount": {
+      "pending": 5,
+      "processing": 10,
+      "finished": 30
+    },
+    "list": [
+      {
+        "refundId": 1,
+        "refundNo": "R20241227120000001",
+        "orderId": 100001,
+        "orderNo": "O20241227120000001",
+        "userId": 1001,
+        "username": "张三",
+        "type": 1,
+        "typeText": "仅退款",
+        "reason": "不想要了",
+        "description": "商品不符合预期",
+        "images": ["url1", "url2"],
+        "refundAmount": 179.80,
+        "status": 1,
+        "statusText": "待处理",
+        "product": {
+          "productName": "泰国金枕榴莲",
+          "image": "url",
+          "price": 89.90,
+          "quantity": 2
+        },
+        "createTime": "2024-12-27 15:00:00"
+      }
+    ]
+  }
+}
+```
+
+### 6.2 退款详情
+
+* **URL**: `/refund/detail/{refundId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "refundId": 1,
+    "refundNo": "R20241227120000001",
+    "orderId": 100001,
+    "orderNo": "O20241227120000001",
+    "orderItemId": 1,
+    "userId": 1001,
+    "username": "张三",
+    "userPhone": "13800138000",
+    "type": 1,
+    "typeText": "仅退款",
+    "reason": "不想要了",
+    "description": "商品不符合预期",
+    "images": ["url1", "url2"],
+    "refundAmount": 179.80,
+    "status": 1,
+    "statusText": "待处理",
+    "product": {
+      "productId": 1,
+      "productName": "泰国金枕榴莲",
+      "image": "url",
+      "specs": "3-4斤",
+      "price": 89.90,
+      "quantity": 2
+    },
+    "timeline": [
+      {
+        "time": "2024-12-27 15:00:00",
+        "status": "买家申请退款",
+        "description": "不想要了"
+      }
+    ],
+    "merchantReply": null,
+    "createTime": "2024-12-27 15:00:00"
+  }
+}
+```
+
+### 6.3 同意退款
+
+* **URL**: `/refund/agree`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "refundId": 1,
+  "merchantRemark": "同意退款"
+}
+```
+
+### 6.4 拒绝退款
+
+* **URL**: `/refund/reject`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "refundId": 1,
+  "rejectReason": "商品已发货，不支持退款",
+  "images": ["url"]
+}
+```
+
+### 6.5 确认收货（退货退款）
+
+* **URL**: `/refund/confirmReceive`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "refundId": 1
+}
+```
+
+---
+
+## 7. 评价管理模块
+
+### 7.1 评价列表
+
+* **URL**: `/comment/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int
+  * `pageSize`: int
+  * `productId`: long
+  * `score`: int (1-5分)
+  * `hasReply`: boolean (是否已回复)
+  * `keyword`: string
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 856,
+    "summary": {
+      "goodRate": 95.5,
+      "avgScore": 4.8,
+      "unreplyCount": 20
+    },
+    "list": [
+      {
+        "commentId": 1,
+        "orderId": 100001,
+        "orderNo": "O20241227120000001",
+        "userId": 1001,
+        "username": "张***",
+        "avatar": "url",
+        "productId": 1,
+        "productName": "泰国金枕榴莲",
+        "productImage": "url",
+        "score": 5,
+        "content": "榴莲很新鲜，肉质细腻，很好吃",
+        "images": ["url1", "url2"],
+        "specs": "3-4斤",
+        "createTime": "2024-12-26 15:30:00",
+        "reply": null,
+        "hasReply": false
+      }
+    ]
+  }
+}
+```
+
+### 7.2 回复评价
+
+* **URL**: `/comment/reply`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "commentId": 1,
+  "content": "感谢您的支持，我们会继续努力！"
+}
+```
+
+### 7.3 删除回复
+
+* **URL**: `/comment/deleteReply/{commentId}`
+* **Method**: `DELETE`
+* **Headers**: `Authorization: Bearer {token}`
+
+---
+
+## 8. 数据统计模块
+
+### 8.1 首页概览
+
+* **URL**: `/statistics/overview`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "todayData": {
+      "orderCount": 50,
+      "orderAmount": 5680.50,
+      "payOrderCount": 45,
+      "payOrderAmount": 5200.00,
+      "visitCount": 1280,
+      "newFanCount": 15,
+      "refundCount": 2
+    },
+    "compareYesterday": {
+      "orderCountRate": 12.5,
+      "orderAmountRate": 15.8,
+      "visitCountRate": 8.3
+    },
+    "pendingCount": {
+      "waitDeliverCount": 30,
+      "refundingCount": 5,
+      "lowStockCount: 8,
+      "unreplyCommentCount": 20
+    }
+  }
+}
+```
+
+### 8.2 销售统计
+
+* **URL**: `/statistics/sales`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `dateType`: string (today/week/month/year)
+  * `startDate`: string
+  * `endDate`: string
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "totalOrderCount": 500,
+    "totalOrderAmount": 56800.00,
+    "totalPayOrderCount": 450,
+    "totalPayOrderAmount": 52000.00,
+    "avgOrderAmount": 115.56,
+    "refundCount": 10,
+    "refundAmount": 1200.00,
+    "refundRate": 2.0,
+    "trendData": [
+      {
+        "date": "2024-12-27",
+        "orderCount": 50,
+        "orderAmount": 5680.50,
+        "payOrderCount": 45,
+        "payOrderAmount": 5200.00
+      }
+    ],
+    "categoryData": [
+      {
+        "categoryName": "热带水果",
+        "orderCount": 200,
+        "orderAmount": 22000.00,
+        "percentage": 42.3
+      }
+    ]
+  }
+}
+```
+
+### 8.3 商品统计
+
+* **URL**: `/statistics/product`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `sortBy`: string (sales/amount/visitCount)
+  * `limit`: int (默认10)
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "topSalesProducts": [
+      {
+        "productId": 1,
+        "productName": "泰国金枕榴莲",
+        "image": "url",
+        "sales": 1520,
+        "amount": 136608.00,
+        "stock": 100
+      }
+    ],
+    "lowStockProducts": [
+      {
+        "productId": 5,
+        "productName": "智利车厘子",
+        "image": "url",
+        "stock": 5,
+        "sales": 890
+      }
+    ]
+  }
+}
+```
+
+### 8.4 客户统计
+
+* **URL**: `/statistics/customer`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "totalCustomerCount": 3200,
+    "newCustomerCount": 150,
+    "activeCustomerCount": 800,
+    "topCustomers": [
+      {
+        "userId": 1001,
+        "username": "张***",
+        "orderCount": 50,
+        "totalAmount": 5680.00,
+        "lastOrderTime": "2024-12-27 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 9. 财务管理模块
+
+### 9.1 财务概览
+
+* **URL**: `/finance/overview`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "balance": 52000.00,
+    "frozenBalance": 5200.00,
+    "totalIncome": 156800.00,
+    "totalWithdraw": 100000.00,
+    "todayIncome": 5200.00,
+    "pendingSettlement": 8000.00
+  }
+}
+```
+
+### 9.2 账单明细
+
+* **URL**: `/finance/bills`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int
+  * `pageSize`: int
+  * `type`: int (1收入/2支出/3提现/4退款)
+  * `startDate`: string
+  * \`

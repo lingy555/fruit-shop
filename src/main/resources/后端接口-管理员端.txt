@@ -1,0 +1,1157 @@
+我来为你提供一个完整的水果商城系统**管理员端**后端接口文档。管理员端主要负责平台整体管理、商家审核、数据监控等核心功能。
+
+# 水果商城系统 - 管理员端接口文档
+
+## 1. 基础信息
+
+**Base URL**: `http://localhost:8080/api/admin`
+
+**统一响应格式**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {},
+  "timestamp": 1640000000000
+}
+```
+
+**状态码说明**:
+
+* 200: 成功
+* 400: 请求参数错误
+* 401: 未登录/token过期
+* 403: 无权限访问
+* 404: 资源不存在
+* 500: 服务器内部错误
+
+---
+
+## 2. 管理员认证模块
+
+### 2.1 管理员登录
+
+* **URL**: `/auth/login`
+* **Method**: `POST`
+* **Request Body**:
+
+```json
+{
+  "username": "admin",
+  "password": "string",
+  "captcha": "string",
+  "captchaKey": "string"
+}
+```
+
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "登录成功",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "tokenExpire": 7200,
+    "adminInfo": {
+      "adminId": 1,
+      "username": "admin",
+      "nickname": "超级管理员",
+      "avatar": "url",
+      "roleId": 1,
+      "roleName": "超级管理员",
+      "permissions": ["*:*:*"]
+    }
+  }
+}
+```
+
+### 2.2 获取验证码
+
+* **URL**: `/auth/captcha`
+* **Method**: `GET`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "captchaKey": "uuid-string",
+    "captchaImage": "data:image/png;base64,..."
+  }
+}
+```
+
+### 2.3 退出登录
+
+* **URL**: `/auth/logout`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 2.4 获取当前管理员信息
+
+* **URL**: `/auth/info`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 2.5 修改密码
+
+* **URL**: `/auth/changePassword`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "oldPassword": "string",
+  "newPassword": "string"
+}
+```
+
+### 2.6 修改个人信息
+
+* **URL**: `/auth/updateProfile`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "nickname": "string",
+  "avatar": "string",
+  "phone": "string",
+  "email": "string"
+}
+```
+
+---
+
+## 3. 管理员管理模块
+
+### 3.1 管理员列表
+
+* **URL**: `/admin/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int (默认1)
+  * `pageSize`: int (默认20)
+  * `keyword`: string (用户名/昵称)
+  * `roleId`: long (角色ID)
+  * `status`: int (0禁用/1启用)
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 50,
+    "list": [
+      {
+        "adminId": 1,
+        "username": "admin",
+        "nickname": "超级管理员",
+        "avatar": "url",
+        "phone": "13800138000",
+        "email": "admin@example.com",
+        "roleId": 1,
+        "roleName": "超级管理员",
+        "status": 1,
+        "lastLoginTime": "2024-12-27 10:00:00",
+        "lastLoginIp": "192.168.1.1",
+        "createTime": "2024-01-01 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+### 3.2 添加管理员
+
+* **URL**: `/admin/add`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "username": "string",
+  "password": "string",
+  "nickname": "string",
+  "phone": "string",
+  "email": "string",
+  "roleId": 2,
+  "status": 1
+}
+```
+
+### 3.3 更新管理员
+
+* **URL**: `/admin/update/{adminId}`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "nickname": "string",
+  "phone": "string",
+  "email": "string",
+  "roleId": 2,
+  "status": 1
+}
+```
+
+### 3.4 删除管理员
+
+* **URL**: `/admin/delete/{adminId}`
+* **Method**: `DELETE`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 3.5 重置密码
+
+* **URL**: `/admin/resetPassword/{adminId}`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "newPassword": "string"
+}
+```
+
+---
+
+## 4. 角色权限模块
+
+### 4.1 角色列表
+
+* **URL**: `/role/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**: page, pageSize, keyword
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 10,
+    "list": [
+      {
+        "roleId": 1,
+        "roleName": "超级管理员",
+        "roleCode": "super_admin",
+        "description": "拥有所有权限",
+        "status": 1,
+        "sort": 1,
+        "createTime": "2024-01-01 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+### 4.2 角色详情
+
+* **URL**: `/role/detail/{roleId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 4.3 添加角色
+
+* **URL**: `/role/add`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "roleName": "string",
+  "roleCode": "string",
+  "description": "string",
+  "permissionIds": [1, 2, 3],
+  "status": 1,
+  "sort": 1
+}
+```
+
+### 4.4 更新角色
+
+* **URL**: `/role/update/{roleId}`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 4.5 删除角色
+
+* **URL**: `/role/delete/{roleId}`
+* **Method**: `DELETE`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 4.6 权限树
+
+* **URL**: `/permission/tree`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": [
+    {
+      "permissionId": 1,
+      "permissionName": "系统管理",
+      "permissionCode": "system",
+      "type": "menu",
+      "icon": "icon-system",
+      "sort": 1,
+      "children": [
+        {
+          "permissionId": 11,
+          "permissionName": "管理员管理",
+          "permissionCode": "system:admin",
+          "type": "menu",
+          "children": [
+            {
+              "permissionId": 111,
+              "permissionName": "查看",
+              "permissionCode": "system:admin:view",
+              "type": "button"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 4.7 角色权限
+
+* **URL**: `/role/permissions/{roleId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+
+---
+
+## 5. 商家管理模块
+
+### 5.1 商家列表
+
+* **URL**: `/merchant/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int
+  * `pageSize`: int
+  * `keyword`: string (商家名称/联系人/手机号)
+  * `status`: int (0待审核/1正常/2禁用/3审核失败)
+  * `province`: string
+  * `city`: string
+  * `startTime`: string
+  * `endTime`: string
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 100,
+    "statusCount": {
+      "pending": 5,
+      "normal": 80,
+      "disabled": 10,
+      "rejected": 5
+    },
+    "list": [
+      {
+        "merchantId": 1001,
+        "shopId": 10,
+        "shopName": "热带果园",
+        "logo": "url",
+        "contactName": "张经理",
+        "contactPhone": "13800138000",
+        "email": "shop@example.com",
+        "province": "广东省",
+        "city": "深圳市",
+        "status": 1,
+        "statusText": "正常",
+        "score": 4.9,
+        "productCount": 156,
+        "totalSales": 156800.00,
+        "fanCount": 3200,
+        "createTime": "2023-01-01 10:00:00",
+        "auditTime": "2023-01-02 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+### 5.2 商家详情
+
+* **URL**: `/merchant/detail/{merchantId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "merchantId": 1001,
+    "shopId": 10,
+    "shopName": "热带果园",
+    "logo": "url",
+    "banner": "url",
+    "description": "专营东南亚进口水果",
+    "contactName": "张经理",
+    "contactPhone": "13800138000",
+    "email": "shop@example.com",
+    "province": "广东省",
+    "city": "深圳市",
+    "district": "南山区",
+    "address": "科技园北区",
+    "businessLicense": "url",
+    "idCardFront": "url",
+    "idCardBack": "url",
+    "qualifications": ["url1", "url2"],
+    "status": 1,
+    "statusText": "正常",
+    "score": 4.9,
+    "productCount": 156,
+    "totalSales": 156800.00,
+    "totalOrderCount": 5680,
+    "fanCount": 3200,
+    "createTime": "2023-01-01 10:00:00",
+    "auditTime": "2023-01-02 10:00:00",
+    "auditRemark": "资质齐全，准予入驻"
+  }
+}
+```
+
+### 5.3 审核商家
+
+* **URL**: `/merchant/audit`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "merchantId": 1001,
+  "status": 1,
+  "auditRemark": "审核通过"
+}
+```
+
+### 5.4 禁用/启用商家
+
+* **URL**: `/merchant/updateStatus`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "merchantId": 1001,
+  "status": 2,
+  "reason": "违规操作"
+}
+```
+
+### 5.5 商家统计
+
+* **URL**: `/merchant/statistics/{merchantId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**: dateType (today/week/month/year)
+
+---
+
+## 6. 用户管理模块
+
+### 6.1 用户列表
+
+* **URL**: `/user/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int
+  * `pageSize`: int
+  * `keyword`: string (用户名/手机号)
+  * `level`: int (用户等级)
+  * `status`: int (0禁用/1正常)
+  * `startTime`: string
+  * `endTime`: string
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 10000,
+    "list": [
+      {
+        "userId": 1001,
+        "username": "user001",
+        "nickname": "小明",
+        "avatar": "url",
+        "phone": "13800138000",
+        "email": "user@example.com",
+        "gender": 1,
+        "level": 2,
+        "levelName": "银牌会员",
+        "points": 520,
+        "balance": 199.50,
+        "status": 1,
+        "orderCount": 50,
+        "totalAmount": 5680.00,
+        "lastLoginTime": "2024-12-27 10:00:00",
+        "createTime": "2024-01-01 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+### 6.2 用户详情
+
+* **URL**: `/user/detail/{userId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "userId": 1001,
+    "username": "user001",
+    "nickname": "小明",
+    "avatar": "url",
+    "phone": "13800138000",
+    "email": "user@example.com",
+    "gender": 1,
+    "birthday": "1990-01-01",
+    "level": 2,
+    "levelName": "银牌会员",
+    "points": 520,
+    "balance": 199.50,
+    "frozenBalance": 0.00,
+    "status": 1,
+    "orderCount": 50,
+    "totalAmount": 5680.00,
+    "couponCount": 5,
+    "favoriteCount": 20,
+    "addressCount": 3,
+    "lastLoginTime": "2024-12-27 10:00:00",
+    "lastLoginIp": "192.168.1.100",
+    "createTime": "2024-01-01 10:00:00"
+  }
+}
+```
+
+### 6.3 禁用/启用用户
+
+* **URL**: `/user/updateStatus`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "userId": 1001,
+  "status": 0,
+  "reason": "违规行为"
+}
+```
+
+### 6.4 调整余额
+
+* **URL**: `/user/adjustBalance`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "userId": 1001,
+  "amount": 100.00,
+  "type": "add",
+  "reason": "活动奖励"
+}
+```
+
+### 6.5 调整积分
+
+* **URL**: `/user/adjustPoints`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "userId": 1001,
+  "points": 100,
+  "type": "add",
+  "reason": "活动奖励"
+}
+```
+
+### 6.6 用户订单记录
+
+* **URL**: `/user/orders/{userId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**: page, pageSize
+
+---
+
+## 7. 商品管理模块
+
+### 7.1 商品列表
+
+* **URL**: `/product/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int
+  * `pageSize`: int
+  * `keyword`: string (商品名称)
+  * `categoryId`: long
+  * `shopId`: long
+  * `status`: int (0下架/1上架/2待审核/3审核失败)
+  * `minPrice`: decimal
+  * `maxPrice`: decimal
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 5000,
+    "statusCount": {
+      "pending": 50,
+      "online": 4500,
+      "offline": 400,
+      "rejected": 50
+    },
+    "list": [
+      {
+        "productId": 1,
+        "productName": "泰国金枕榴莲",
+        "categoryId": 11,
+        "categoryName": "榴莲",
+        "shopId": 10,
+        "shopName": "热带果园",
+        "image": "url",
+        "price": 89.90,
+        "originalPrice": 120.00,
+        "stock": 100,
+        "sales": 1520,
+        "status": 1,
+        "statusText": "已上架",
+        "score": 4.8,
+        "commentCount": 856,
+        "viewCount": 5600,
+        "createTime": "2024-12-01 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+### 7.2 商品详情
+
+* **URL**: `/product/detail/{productId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 7.3 审核商品
+
+* **URL**: `/product/audit`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "productId": 1,
+  "status": 1,
+  "auditRemark": "审核通过"
+}
+```
+
+### 7.4 强制下架商品
+
+* **URL**: `/product/forceOffline`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "productId": 1,
+  "reason": "商品描述不符"
+}
+```
+
+### 7.5 删除商品
+
+* **URL**: `/product/delete/{productId}`
+* **Method**: `DELETE`
+* **Headers**: `Authorization: Bearer {token}`
+
+---
+
+## 8. 分类管理模块
+
+### 8.1 分类列表（树形）
+
+* **URL**: `/category/tree`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": [
+    {
+      "categoryId": 1,
+      "categoryName": "热带水果",
+      "icon": "url",
+      "parentId": 0,
+      "level": 1,
+      "sort": 1,
+      "status": 1,
+      "productCount": 500,
+      "children": [
+        {
+          "categoryId": 11,
+          "categoryName": "榴莲",
+          "icon": "url",
+          "parentId": 1,
+          "level": 2,
+          "sort": 1,
+          "productCount": 50
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 8.2 添加分类
+
+* **URL**: `/category/add`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "categoryName": "string",
+  "icon": "string",
+  "parentId": 0,
+  "level": 1,
+  "sort": 1,
+  "status": 1
+}
+```
+
+### 8.3 更新分类
+
+* **URL**: `/category/update/{categoryId}`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 8.4 删除分类
+
+* **URL**: `/category/delete/{categoryId}`
+* **Method**: `DELETE`
+* **Headers**: `Authorization: Bearer {token}`
+
+---
+
+## 9. 订单管理模块
+
+### 9.1 订单列表
+
+* **URL**: `/order/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int
+  * `pageSize`: int
+  * `orderNo`: string (订单号)
+  * `status`: int
+  * `shopId`: long
+  * `userId`: long
+  * `keyword`: string (收货人/手机号)
+  * `startTime`: string
+  * `endTime`: string
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 50000,
+    "statusCount": {
+      "waitPay": 500,
+      "waitDeliver": 1000,
+      "waitReceive": 2000,
+      "finished": 45000,
+      "cancelled": 1000,
+      "refunding": 500
+    },
+    "list": [
+      {
+        "orderId": 100001,
+        "orderNo": "O20241227120000001",
+        "userId": 1001,
+        "username": "张三",
+        "shopId": 10,
+        "shopName": "热带果园",
+        "status": 2,
+        "statusText": "待发货",
+        "totalAmount": 259.70,
+        "actualAmount": 239.70,
+        "paymentMethod": "alipay",
+        "createTime": "2024-12-27 10:00:00",
+        "payTime": "2024-12-27 10:05:00"
+      }
+    ]
+  }
+}
+```
+
+### 9.2 订单详情
+
+* **URL**: `/order/detail/{orderId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 9.3 订单统计
+
+* **URL**: `/order/statistics`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**: dateType, startDate, endDate
+
+---
+
+## 10. 退款管理模块
+
+### 10.1 退款列表
+
+* **URL**: `/refund/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int
+  * `pageSize`: int
+  * `refundNo`: string
+  * `status`: int
+  * `shopId`: long
+  * `keyword`: string
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 500,
+    "list": [
+      {
+        "refundId": 1,
+        "refundNo": "R20241227120000001",
+        "orderId": 100001,
+        "orderNo": "O20241227120000001",
+        "userId": 1001,
+        "username": "张三",
+        "shopId": 10,
+        "shopName": "热带果园",
+        "type": 1,
+        "typeText": "仅退款",
+        "reason": "不想要了",
+        "refundAmount": 179.80,
+        "status": 1,
+        "statusText": "待处理",
+        "createTime": "2024-12-27 15:00:00"
+      }
+    ]
+  }
+}
+```
+
+### 10.2 退款详情
+
+* **URL**: `/refund/detail/{refundId}`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 10.3 仲裁退款
+
+* **URL**: `/refund/arbitrate`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "refundId": 1,
+  "result": 1,
+  "reason": "仲裁结果说明"
+}
+```
+
+---
+
+## 11. 评价管理模块
+
+### 11.1 评价列表
+
+* **URL**: `/comment/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**:
+
+  * `page`: int
+  * `pageSize`: int
+  * `productId`: long
+  * `shopId`: long
+  * `score`: int
+  * `keyword`: string
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 10000,
+    "list": [
+      {
+        "commentId": 1,
+        "orderId": 100001,
+        "userId": 1001,
+        "username": "张***",
+        "productId": 1,
+        "productName": "泰国金枕榴莲",
+        "shopId": 10,
+        "shopName": "热带果园",
+        "score": 5,
+        "content": "很新鲜",
+        "images": ["url"],
+        "status": 1,
+        "createTime": "2024-12-26 15:30:00"
+      }
+    ]
+  }
+}
+```
+
+### 11.2 删除评价
+
+* **URL**: `/comment/delete/{commentId}`
+* **Method**: `DELETE`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 11.3 隐藏/显示评价
+
+* **URL**: `/comment/updateStatus`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "commentId": 1,
+  "status": 0
+}
+```
+
+---
+
+## 12. 营销管理模块
+
+### 12.1 优惠券列表
+
+* **URL**: `/coupon/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**: page, pageSize, type, status
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 50,
+    "list": [
+      {
+        "couponId": 1,
+        "couponName": "新人专享券",
+        "couponType": 1,
+        "discountType": 1,
+        "discountValue": 20.00,
+        "minAmount": 100.00,
+        "totalCount": 10000,
+        "receivedCount": 5000,
+        "usedCount": 2000,
+        "startTime": "2024-12-01 00:00:00",
+        "endTime": "2024-12-31 23:59:59",
+        "status": 1,
+        "createTime": "2024-11-01 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+### 12.2 添加优惠券
+
+* **URL**: `/coupon/add`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "couponName": "string",
+  "couponType": 1,
+  "discountType": 1,
+  "discountValue": 20.00,
+  "minAmount": 100.00,
+  "totalCount": 10000,
+  "limitPerUser": 1,
+  "validDays": 30,
+  "startTime": "2024-12-01 00:00:00",
+  "endTime": "2024-12-31 23:59:59",
+  "description": "string"
+}
+```
+
+### 12.3 更新优惠券
+
+* **URL**: `/coupon/update/{couponId}`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 12.4 删除优惠券
+
+* **URL**: `/coupon/delete/{couponId}`
+* **Method**: `DELETE`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 12.5 轮播图管理
+
+* **URL**: `/banner/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Response**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": [
+    {
+      "bannerId": 1,
+      "title": "春节大促",
+      "image": "url",
+      "position": "home",
+      "linkType": "product",
+      "linkValue": "100",
+      "sort": 1,
+      "status": 1,
+      "startTime": "2024-12-01",
+      "endTime": "2024-12-31",
+      "createTime": "2024-11-01"
+    }
+  ]
+}
+```
+
+### 12.6 添加轮播图
+
+* **URL**: `/banner/add`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "title": "string",
+  "image": "string",
+  "position": "home",
+  "linkType": "product/category/url",
+  "linkValue": "string",
+  "sort": 1,
+  "startTime": "string",
+  "endTime": "string"
+}
+```
+
+---
+
+## 13. 内容管理模块
+
+### 13.1 公告列表
+
+* **URL**: `/notice/list`
+* **Method**: `GET`
+* **Headers**: `Authorization: Bearer {token}`
+* **Query Parameters**: page, pageSize, type, status
+
+### 13.2 发布公告
+
+* **URL**: `/notice/add`
+* **Method**: `POST`
+* **Headers**: `Authorization: Bearer {token}`
+* **Request Body**:
+
+```json
+{
+  "title": "string",
+  "content": "string",
+  "type": 1,
+  "status": 1,
+  "sort": 1
+}
+```
+
+### 13.3 更新公告
+
+* **URL**: `/notice/update/{noticeId}`
+* **Method**: `PUT`
+* **Headers**: `Authorization: Bearer {token}`
+
+### 13.4 删除公告
+
+*
