@@ -22,7 +22,7 @@ const router = useRouter()
 
 // 返回首页
 const goHome = () => {
-  router.push('/')
+  router.push('/home')
 }
 
 // 返回上一页

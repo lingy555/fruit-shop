@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import AppHeader from '@/components/layout/AppHeader.vue'
@@ -8,9 +8,12 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 const userStore = useUserStore()
 const route = useRoute()
 
-const isBackOffice = () => {
-  return route.path.startsWith('/admin') || route.path.startsWith('/merchant')
-}
+const showFrontendLayout = computed(() => {
+  const path = route.path
+  const isBackOffice = path.startsWith('/admin') || path.startsWith('/merchant')
+  const isEntry = path === '/'
+  return !isBackOffice && !isEntry
+})
 
 // 页面加载时，如果有token则获取用户信息
 onMounted(async () => {
@@ -27,13 +30,13 @@ onMounted(async () => {
 
 <template>
   <div class="app-container">
-    <AppHeader v-if="!isBackOffice()" />
+    <AppHeader v-if="showFrontendLayout" />
 
-    <main :class="isBackOffice() ? 'admin-main-content' : 'main-content'">
+    <main :class="showFrontendLayout ? 'main-content' : 'admin-main-content'">
       <router-view />
     </main>
 
-    <AppFooter v-if="!isBackOffice()" />
+    <AppFooter v-if="showFrontendLayout" />
   </div>
 </template>
 

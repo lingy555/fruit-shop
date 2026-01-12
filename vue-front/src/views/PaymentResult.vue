@@ -177,7 +177,7 @@ const viewOrder = () => {
 
 // 返回首页
 const goHome = () => {
-  router.push('/')
+  router.push('/home')
 }
 
 // 继续购物

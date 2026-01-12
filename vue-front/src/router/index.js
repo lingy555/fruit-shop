@@ -56,7 +56,15 @@ const MerchantShop = () => import('@/views/merchant/Shop.vue')
 const MerchantStatistics = () => import('@/views/merchant/Statistics.vue')
 
 // 路由配置
+const Entry = () => import('@/views/Entry.vue')
+
 const routes = [
+  {
+    path: '/',
+    name: 'Entry',
+    component: Entry,
+    meta: { title: '选择身份登录' }
+  },
   {
     path: '/merchant/login',
     name: 'MerchantLogin',
@@ -114,7 +122,7 @@ const routes = [
     ]
   },
   {
-    path: '/',
+    path: '/home',
     name: 'Home',
     component: Home,
     meta: { title: '首页' }
@@ -320,7 +328,7 @@ router.beforeEach((to, from, next) => {
     })
   } else if ((to.path === '/login' || to.path === '/register') && userStore.isLogin) {
     // 已登录状态下访问登录/注册页，跳转到首页
-    next({ path: '/' })
+    next({ path: '/home' })
   } else {
     next()
   }

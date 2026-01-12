@@ -391,7 +391,7 @@ const goToShop = (shopId) => {
 
 // 去首页
 const goToHome = () => {
-  router.push('/')
+  router.push('/home')
 }
 
 // 去结算

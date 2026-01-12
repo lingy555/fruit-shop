@@ -3,7 +3,7 @@
   <header class="app-header">
     <div class="header-container">
       <div class="header-left">
-        <router-link to="/" class="logo">
+        <router-link to="/home" class="logo">
           <img src="@/assets/logo.png" alt="欢喜果铺" />
           <span>欢喜果铺</span>
         </router-link>
@@ -21,6 +21,25 @@
               <el-button icon="Search" @click="handleSearch" />
             </template>
           </el-input>
+          <div class="history-search" v-if="historyKeywords.length">
+            <div class="history-title">
+              <span>历史搜索</span>
+              <button type="button" class="history-clear" @click="clearHistory">
+                <el-icon><Delete /></el-icon>
+                清除
+              </button>
+            </div>
+            <div class="history-tags">
+              <span
+                v-for="keyword in historyKeywords"
+                :key="keyword"
+                class="history-tag"
+                @click="handleHistoryClick(keyword)"
+              >
+                {{ keyword }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -78,7 +97,7 @@
     <div class="nav-container">
       <div class="nav-left">
         <el-menu mode="horizontal" :default-active="activeIndex" router>
-          <el-menu-item index="/">首页</el-menu-item>
+          <el-menu-item index="/home">首页</el-menu-item>
           <el-menu-item index="/category">分类</el-menu-item>
           <el-menu-item index="/filter">水果筛选</el-menu-item>
           <el-menu-item index="/promotion">促销活动</el-menu-item>
@@ -95,6 +114,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Delete } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -102,6 +122,8 @@ const userStore = useUserStore()
 
 // 搜索关键词
 const searchKeyword = ref('')
+const historyKeywords = ref([])
+const HISTORY_KEY = 'fruit-shop_search_history'
 
 // 购物车数量
 const cartCount = ref(0)
@@ -116,12 +138,36 @@ const handleSearch = () => {
     return
   }
 
+  addKeywordToHistory(searchKeyword.value.trim())
+
   router.push({
     path: '/search',
     query: {
       keyword: searchKeyword.value
     }
   })
+}
+
+const addKeywordToHistory = (keyword) => {
+  const existsIndex = historyKeywords.value.indexOf(keyword)
+  if (existsIndex !== -1) {
+    historyKeywords.value.splice(existsIndex, 1)
+  }
+  historyKeywords.value.unshift(keyword)
+  if (historyKeywords.value.length > 6) {
+    historyKeywords.value.pop()
+  }
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(historyKeywords.value))
+}
+
+const handleHistoryClick = (keyword) => {
+  searchKeyword.value = keyword
+  handleSearch()
+}
+
+const clearHistory = () => {
+  historyKeywords.value = []
+  localStorage.removeItem(HISTORY_KEY)
 }
 
 // 处理下拉菜单命令
@@ -147,7 +193,7 @@ const handleCommand = (command) => {
       }).then(async () => {
         await userStore.logout()
         ElMessage.success('退出登录成功')
-        router.push('/')
+        router.push('/home')
       }).catch(() => {
         // 取消退出
       })
@@ -159,6 +205,14 @@ const handleCommand = (command) => {
 onMounted(() => {
   // 这里可以获取购物车数量
   // cartCount.value = await getCartCount()
+  const saved = localStorage.getItem(HISTORY_KEY)
+  if (saved) {
+    try {
+      historyKeywords.value = JSON.parse(saved)
+    } catch (error) {
+      historyKeywords.value = []
+    }
+  }
 })
 </script>
 
@@ -206,6 +260,62 @@ onMounted(() => {
 .search-box {
   width: 100%;
   max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-search {
+  background: #fafafa;
+  border: 1px solid #f3f3f3;
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+
+.history-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.history-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.history-clear:hover {
+  color: #ff7043;
+}
+
+.history-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.history-tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-tag:hover {
+  border-color: #22c55e;
+  color: #16a34a;
 }
 
 .header-right {
