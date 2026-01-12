@@ -4,8 +4,10 @@ import com.lingnan.fruitshop.common.api.ApiResponse;
 import com.lingnan.fruitshop.dto.customer.auth.*;
 import com.lingnan.fruitshop.dto.customer.auth.vo.LoginResponse;
 import com.lingnan.fruitshop.dto.customer.auth.vo.RegisterResponse;
+import com.lingnan.fruitshop.dto.customer.auth.vo.CaptchaResponse;
 import com.lingnan.fruitshop.security.SecurityUtils;
 import com.lingnan.fruitshop.service.AuthService;
+import com.lingnan.fruitshop.service.CaptchaService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,9 +16,17 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final CaptchaService captchaService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, CaptchaService captchaService) {
         this.authService = authService;
+        this.captchaService = captchaService;
+    }
+
+    @GetMapping("/captcha")
+    public ApiResponse<CaptchaResponse> captcha() {
+        CaptchaService.CaptchaResult result = captchaService.generate();
+        return ApiResponse.success(new CaptchaResponse(result.captchaKey(), result.captchaImage()));
     }
 
     @PostMapping("/register")

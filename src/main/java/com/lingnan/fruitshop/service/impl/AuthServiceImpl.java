@@ -12,6 +12,7 @@ import com.lingnan.fruitshop.mapper.UserAccountMapper;
 import com.lingnan.fruitshop.security.JwtProperties;
 import com.lingnan.fruitshop.security.JwtTokenUtil;
 import com.lingnan.fruitshop.service.SmsCodeService;
+import com.lingnan.fruitshop.service.CaptchaService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,17 +26,20 @@ public class AuthServiceImpl implements AuthService {
     private final UserAccountMapper userAccountMapper;
     private final PasswordEncoder passwordEncoder;
     private final SmsCodeService smsCodeService;
+    private final CaptchaService captchaService;
     private final JwtTokenUtil jwtTokenUtil;
     private final JwtProperties jwtProperties;
 
     public AuthServiceImpl(UserAccountMapper userAccountMapper,
                        PasswordEncoder passwordEncoder,
                        SmsCodeService smsCodeService,
+                       CaptchaService captchaService,
                        JwtTokenUtil jwtTokenUtil,
                        JwtProperties jwtProperties) {
         this.userAccountMapper = userAccountMapper;
         this.passwordEncoder = passwordEncoder;
         this.smsCodeService = smsCodeService;
+        this.captchaService = captchaService;
         this.jwtTokenUtil = jwtTokenUtil;
         this.jwtProperties = jwtProperties;
     }
@@ -78,6 +82,10 @@ public class AuthServiceImpl implements AuthService {
     // ==================== 用户登录核心逻辑 ====================
     @Override
     public LoginResponse login(LoginRequest req) {
+        boolean captchaOk = captchaService.verify(req.getCaptchaKey(), req.getCaptcha());
+        if (!captchaOk) {
+            throw BizException.badRequest("验证码错误");
+        }
         // 步骤1: 根据用户名或手机号查找用户
         UserAccount user = userAccountMapper.selectOne(new LambdaQueryWrapper<UserAccount>()
                 .eq(UserAccount::getUsername, req.getUsername())

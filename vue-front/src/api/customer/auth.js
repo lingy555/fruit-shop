@@ -47,6 +47,12 @@ export const auth = {
       method: 'post',
       data
     })
+  },
+  captcha() {
+    return request({
+      url: '/customer/auth/captcha',
+      method: 'get'
+    })
   }
 }
 

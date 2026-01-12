@@ -38,6 +38,24 @@
               />
             </el-form-item>
 
+            <el-form-item prop="captcha">
+              <div class="captcha-row">
+                <el-input 
+                  v-model="loginForm.captcha" 
+                  placeholder="请输入验证码"
+                  prefix-icon="Key"
+                  clearable
+                  @keyup.enter="handleLogin"
+                />
+                <img 
+                  class="captcha-img"
+                  :src="captchaImage"
+                  alt="验证码"
+                  @click="loadCaptcha"
+                />
+              </div>
+            </el-form-item>
+
             <div class="login-options">
               <el-checkbox v-model="rememberMe">记住我</el-checkbox>
               <router-link to="/forgot-password" class="forgot-link">忘记密码？</router-link>
@@ -114,10 +132,14 @@ const activeTab = ref('account')
 const loginForm = reactive({
   username: '',
   password: '',
+  captcha: '',
+  captchaKey: '',
   phone: '',
   verifyCode: '',
   loginType: 'password'
 })
+
+const captchaImage = ref('')
 
 // 表单验证规则
 const loginRules = computed(() => {
@@ -127,6 +149,10 @@ const loginRules = computed(() => {
       password: [
         { required: true, message: '请输入密码', trigger: 'blur' },
         { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
+      ],
+      captcha: [
+        { required: true, message: '请输入验证码', trigger: 'blur' },
+        { len: 4, message: '验证码为4位字符', trigger: 'blur' }
       ]
     }
   }
@@ -141,6 +167,8 @@ const loginRules = computed(() => {
       { len: 6, message: '验证码长度为6位', trigger: 'blur' }
     ]
   }
+
+  loadCaptcha()
 })
 
 watch(activeTab, () => {
@@ -163,6 +191,12 @@ const handleLogin = async () => {
   // 设置登录类型（要在 validate 前设置，避免校验规则/提交逻辑不一致）
   loginForm.loginType = activeTab.value === 'account' ? 'password' : 'sms'
 
+  if (activeTab.value === 'account' && !loginForm.captchaKey) {
+    await loadCaptcha()
+    ElMessage.warning('请先获取验证码')
+    return
+  }
+
   // 表单验证
   const valid = await loginFormRef.value.validate().catch((e) => {
     console.groupCollapsed('[Login Validate Failed]')
@@ -183,6 +217,8 @@ const handleLogin = async () => {
       response = await userStore.login({
         username: loginForm.username,
         password: loginForm.password,
+        captcha: loginForm.captcha,
+        captchaKey: loginForm.captchaKey,
         loginType: 'password'
       })
     } else {
@@ -220,6 +256,7 @@ const handleLogin = async () => {
     console.log('error.code:', error?.code)
     console.log('error.response:', error?.response)
     console.groupEnd()
+    await loadCaptcha()
   } finally {
     loading.value = false
   }
@@ -251,6 +288,17 @@ const sendCode = async () => {
     }, 1000)
   } catch (error) {
     console.error('发送验证码失败:', error)
+  }
+}
+
+const loadCaptcha = async () => {
+  try {
+    const res = await auth.captcha()
+    loginForm.captchaKey = res.data.captchaKey
+    captchaImage.value = res.data.captchaImage
+  } catch (error) {
+    console.error('获取验证码失败:', error)
+    ElMessage.error('获取验证码失败，请稍后再试')
   }
 }
 
