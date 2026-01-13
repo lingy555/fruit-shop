@@ -608,9 +608,9 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { user, order, coupon } from '@/api'
+import { user, order, coupon, address } from '@/api'
 import { useUserStore } from '@/store/user'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -672,6 +672,7 @@ const rechargeDialogVisible = ref(false)
 
 // 是否编辑地址
 const isEditAddress = ref(false)
+const editAddressId = ref(0)
 
 // 表单引用
 const profileFormRef = ref(null)
@@ -857,25 +858,11 @@ const fetchRecentOrders = async () => {
 // 获取收货地址
 const fetchAddresses = async () => {
   try {
-    // 这里应该调用API获取地址列表
-    // const response = await address.getList()
-    // addresses.value = response.data || []
-
-    // 模拟数据
-    addresses.value = [
-      {
-        addressId: 1,
-        receiverName: '张三',
-        receiverPhone: '13800138000',
-        province: '广东省',
-        city: '深圳市',
-        district: '南山区',
-        detail: '科技园南区A座',
-        isDefault: true
-      }
-    ]
+    const response = await address.getList()
+    addresses.value = response.data || []
   } catch (error) {
     console.error('获取收货地址失败:', error)
+    ElMessage.error('获取收货地址失败')
   }
 }
 
@@ -1155,6 +1142,7 @@ const showAddressDialog = () => {
 // 编辑地址
 const editAddress = (address) => {
   isEditAddress.value = true
+  editAddressId.value = address.addressId
 
   // 填充表单
   addressForm.receiverName = address.receiverName
@@ -1188,19 +1176,27 @@ const saveAddress = async () => {
 
   addressSaving.value = true
   try {
+    const [province, city, district] = addressForm.region
+    const payload = {
+      receiverName: addressForm.receiverName,
+      receiverPhone: addressForm.receiverPhone,
+      province,
+      city,
+      district,
+      detail: addressForm.detail,
+      isDefault: addressForm.isDefault
+    }
     if (isEditAddress.value) {
-      // 编辑地址
-      // await address.update(addressForm)
+      await address.update({ ...payload, addressId: editAddressId.value })
+      ElMessage.success('地址更新成功')
     } else {
-      // 新增地址
-      // await address.add(addressForm)
+      await address.add(payload)
+      ElMessage.success('地址添加成功')
     }
 
-    // 刷新地址列表
     fetchAddresses()
 
     addressDialogVisible.value = false
-    ElMessage.success('保存成功')
   } catch (error) {
     console.error('保存地址失败:', error)
     ElMessage.error('保存失败')
@@ -1218,11 +1214,9 @@ const deleteAddress = async (addressId) => {
       type: 'warning'
     })
 
-    // await address.delete(addressId)
+    await address.delete(addressId)
 
-    // 刷新地址列表
     fetchAddresses()
-
     ElMessage.success('删除成功')
   } catch (error) {
     if (error !== 'cancel') {
@@ -1255,18 +1249,22 @@ const recharge = async () => {
 
   rechargeSaving.value = true
   try {
-    // 这里应该调用充值API
-    // const response = await user.recharge(rechargeForm)
-
-    // 模拟充值成功
+    const response = await user.recharge({
+      amount: rechargeForm.amount,
+      paymentMethod: rechargeForm.paymentMethod
+    })
     rechargeDialogVisible.value = false
+    const data = response?.data || {}
+    const latestBalance = data.balance
+    if (latestBalance !== undefined) {
+      balanceInfo.value.balance = latestBalance
+    }
     ElMessage.success('充值成功')
 
-    // 刷新余额信息
     fetchBalanceInfo()
   } catch (error) {
     console.error('充值失败:', error)
-    ElMessage.error('充值失败')
+    ElMessage.error(error?.response?.data?.message || '充值失败')
   } finally {
     rechargeSaving.value = false
   }

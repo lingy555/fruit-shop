@@ -59,4 +59,10 @@ public class UserController {
         long userId = SecurityUtils.currentUserId();
         return ApiResponse.success(userService.pointsRecords(userId, page, pageSize));
     }
+
+    @PostMapping("/recharge")
+    public ApiResponse<BalanceResponse> recharge(@Valid @RequestBody RechargeRequest req) {
+        long userId = SecurityUtils.currentUserId();
+        return ApiResponse.success(userService.recharge(userId, req.getAmount()));
+    }
 }

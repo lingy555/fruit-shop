@@ -40,6 +40,13 @@ export const user = {
       method: 'get',
       params
     })
+  },
+  recharge(data) {
+    return request({
+      url: '/customer/user/recharge',
+      method: 'post',
+      data
+    })
   }
 }
 

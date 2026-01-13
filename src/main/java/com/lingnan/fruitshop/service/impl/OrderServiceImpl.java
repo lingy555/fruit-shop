@@ -594,14 +594,38 @@ public class OrderServiceImpl implements OrderService {
                     .set(Shop::getTotalSalesAmount, oldAmount.add(addAmount)));
         }
 
-        orderMapper.update(null, new LambdaUpdateWrapper<Order>()
-                .eq(Order::getOrderId, order.getOrderId())
-                .eq(Order::getUserId, userId)
-                .set(Order::getStatus, STATUS_WAIT_DELIVER)
-                .set(Order::getPaymentMethod, req.getPaymentMethod())
-                .set(Order::getPayTime, LocalDateTime.now()));
+        String method = req.getPaymentMethod();
+        if ("balance".equalsIgnoreCase(method)) {
+            UserAccount ua = userAccountMapper.selectById(userId);
+            if (ua == null) {
+                throw BizException.notFound("用户不存在");
+            }
+            BigDecimal balance = ua.getBalance() == null ? BigDecimal.ZERO : ua.getBalance();
+            BigDecimal need = order.getActualAmount() == null ? BigDecimal.ZERO : order.getActualAmount();
+            if (balance.compareTo(need) < 0) {
+                throw BizException.badRequest("余额不足，需 ¥" + need);
+            }
+            ua.setBalance(balance.subtract(need));
+            userAccountMapper.updateById(ua);
 
-        return new OrderPayResponse(paymentUrl(order.getOrderId(), req.getPaymentMethod()), null);
+            orderMapper.update(null, new LambdaUpdateWrapper<Order>()
+                    .eq(Order::getOrderId, order.getOrderId())
+                    .eq(Order::getUserId, userId)
+                    .set(Order::getStatus, STATUS_WAIT_DELIVER)
+                    .set(Order::getPaymentMethod, "balance")
+                    .set(Order::getPayTime, LocalDateTime.now()));
+
+            return new OrderPayResponse(null, null);
+        } else {
+            orderMapper.update(null, new LambdaUpdateWrapper<Order>()
+                    .eq(Order::getOrderId, order.getOrderId())
+                    .eq(Order::getUserId, userId)
+                    .set(Order::getStatus, STATUS_WAIT_DELIVER)
+                    .set(Order::getPaymentMethod, method)
+                    .set(Order::getPayTime, LocalDateTime.now()));
+
+            return new OrderPayResponse(paymentUrl(order.getOrderId(), method), null);
+        }
     }
 
     @Override

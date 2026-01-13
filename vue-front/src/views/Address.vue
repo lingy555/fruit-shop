@@ -121,6 +121,7 @@ const router = useRouter()
 
 // 地址列表
 const addresses = ref([])
+const addressLoading = ref(false)
 
 // 地址对话框可见性
 const addressDialogVisible = ref(false)
@@ -186,42 +187,23 @@ const addressSaving = ref(false)
 
 // 获取地址列表
 const fetchAddresses = async () => {
+  addressLoading.value = true
   try {
-    // 这里应该调用地址API获取地址列表
-    // const response = await address.getList()
-    // addresses.value = response.data || []
-
-    // 模拟数据
-    addresses.value = [
-      {
-        addressId: 1,
-        receiverName: '张三',
-        receiverPhone: '13800138000',
-        province: '广东省',
-        city: '深圳市',
-        district: '南山区',
-        detail: '科技园南区A座',
-        isDefault: true
-      },
-      {
-        addressId: 2,
-        receiverName: '李四',
-        receiverPhone: '13900139000',
-        province: '上海市',
-        city: '上海市',
-        district: '浦东新区',
-        detail: '陆家嘴金融中心',
-        isDefault: false
-      }
-    ]
+    const response = await address.getList()
+    addresses.value = response.data || []
   } catch (error) {
     console.error('获取收货地址失败:', error)
+    ElMessage.error('获取收货地址失败')
+  } finally {
+    addressLoading.value = false
   }
 }
 
 // 显示地址对话框
 const showAddressDialog = () => {
   isEdit.value = false
+  editAddressId.value = 0
+  resetAddressForm()
   addressDialogVisible.value = true
 }
 
@@ -244,6 +226,8 @@ const editAddress = (address) => {
 
 // 重置地址表单
 const resetAddressForm = () => {
+  isEdit.value = false
+  editAddressId.value = 0
   Object.assign(addressForm, {
     receiverName: '',
     receiverPhone: '',
@@ -265,73 +249,26 @@ const saveAddress = async () => {
   addressSaving.value = true
   try {
     const [province, city, district] = addressForm.region
+    const payload = {
+      receiverName: addressForm.receiverName,
+      receiverPhone: addressForm.receiverPhone,
+      province,
+      city,
+      district,
+      detail: addressForm.detail,
+      isDefault: addressForm.isDefault
+    }
 
     if (isEdit.value) {
-      // 编辑地址
-      // await address.update({
-      //   addressId: editAddressId.value,
-      //   receiverName: addressForm.receiverName,
-      //   receiverPhone: addressForm.receiverPhone,
-      //   province,
-      //   city,
-      //   district,
-      //   detail: addressForm.detail,
-      //   isDefault: addressForm.isDefault
-      // })
-
-      // 更新列表中的地址
-      const index = addresses.value.findIndex(addr => addr.addressId === editAddressId.value)
-      if (index !== -1) {
-        addresses.value[index] = {
-          ...addresses.value[index],
-          receiverName: addressForm.receiverName,
-          receiverPhone: addressForm.receiverPhone,
-          province,
-          city,
-          district,
-          detail: addressForm.detail,
-          isDefault: addressForm.isDefault
-        }
-      }
-
+      await address.update({ ...payload, addressId: editAddressId.value })
       ElMessage.success('地址更新成功')
     } else {
-      // 新增地址
-      // const response = await address.add({
-      //   receiverName: addressForm.receiverName,
-      //   receiverPhone: addressForm.receiverPhone,
-      //   province,
-      //   city,
-      //   district,
-      //   detail: addressForm.detail,
-      //   isDefault: addressForm.isDefault
-      // })
-
-      const newAddress = {
-        addressId: Date.now(), // 模拟ID
-        receiverName: addressForm.receiverName,
-        receiverPhone: addressForm.receiverPhone,
-        province,
-        city,
-        district,
-        detail: addressForm.detail,
-        isDefault: addressForm.isDefault
-      }
-
-      addresses.value.push(newAddress)
+      await address.add(payload)
       ElMessage.success('地址添加成功')
     }
 
-    // 如果设为默认地址，需要更新其他地址
-    if (addressForm.isDefault) {
-      addresses.value.forEach(addr => {
-        if (addr.addressId !== editAddressId.value && !isEdit.value) {
-          addr.isDefault = false
-        }
-      })
-    }
-
     addressDialogVisible.value = false
+    fetchAddresses()
   } catch (error) {
     console.error('保存地址失败:', error)
     ElMessage.error('保存地址失败')
@@ -343,13 +280,8 @@ const saveAddress = async () => {
 // 设为默认地址
 const setDefaultAddress = async (addressId) => {
   try {
-    // await address.setDefault(addressId)
-
-    // 更新列表中的默认状态
-    addresses.value.forEach(addr => {
-      addr.isDefault = addr.addressId === addressId
-    })
-
+    await address.setDefault(addressId)
+    fetchAddresses()
     ElMessage.success('已设为默认地址')
   } catch (error) {
     console.error('设置默认地址失败:', error)
@@ -366,13 +298,10 @@ const deleteAddress = async (addressId) => {
       type: 'warning'
     })
 
-    // await address.delete(addressId)
+    await address.delete(addressId)
 
-    // 从列表中移除
-    const index = addresses.value.findIndex(addr => addr.addressId === addressId)
-    if (index !== -1) {
-      addresses.value.splice(index, 1)
-    }
+    // 刷新列表
+    fetchAddresses()
 
     ElMessage.success('地址删除成功')
   } catch (error) {

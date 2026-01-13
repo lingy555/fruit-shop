@@ -17,6 +17,7 @@ import com.lingnan.fruitshop.mapper.UserCouponMapper;
 import com.lingnan.fruitshop.mapper.UserPointsRecordMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -207,6 +208,22 @@ public class UserServiceImpl implements UserService {
         )).toList();
 
         return new PointsRecordsResponse(result.getTotal(), user.getPoints() == null ? 0 : user.getPoints(), list);
+    }
+
+    @Override
+    @Transactional
+    public BalanceResponse recharge(long userId, BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw BizException.badRequest("充值金额必须大于0");
+        }
+        UserAccount user = userAccountMapper.selectById(userId);
+        if (user == null) {
+            throw BizException.notFound("用户不存在");
+        }
+        BigDecimal current = user.getBalance() == null ? BigDecimal.ZERO : user.getBalance();
+        user.setBalance(current.add(amount));
+        userAccountMapper.updateById(user);
+        return new BalanceResponse(user.getBalance(), user.getFrozenBalance() == null ? BigDecimal.ZERO : user.getFrozenBalance());
     }
 
     private String levelName(Integer level) {
