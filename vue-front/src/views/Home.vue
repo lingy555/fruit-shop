@@ -21,7 +21,7 @@
           @click="goToCategory(category.categoryId)"
         >
           <div class="category-icon">
-            <img :src="category.icon" :alt="category.categoryName" />
+            <img v-lazy="category.iconWebp || category.icon" :alt="category.categoryName" />
           </div>
           <div class="category-name">{{ category.categoryName }}</div>
         </div>
@@ -38,7 +38,7 @@
         <ProductCard 
           v-for="product in hotProducts" 
           :key="product.productId" 
-          :product="product"
+          :product="transformProduct(product)"
         />
       </div>
     </div>
@@ -53,7 +53,7 @@
         <ProductCard 
           v-for="product in newProducts" 
           :key="product.productId" 
-          :product="product"
+          :product="transformProduct(product)"
         />
       </div>
     </div>
@@ -68,7 +68,7 @@
         <ProductCard 
           v-for="product in recommendProducts" 
           :key="product.productId" 
-          :product="product"
+          :product="transformProduct(product)"
         />
       </div>
     </div>
@@ -117,6 +117,11 @@ const newProducts = ref([])
 
 // 推荐商品
 const recommendProducts = ref([])
+
+const transformProduct = (product) => ({
+  ...product,
+  image: product.imageWebp || product.image
+})
 
 // 公告列表
 const notices = ref([])
@@ -191,8 +196,8 @@ onMounted(async () => {
 <style scoped>
 .home-container {
   min-height: calc(100vh - 80px);
-  padding: 60px 24px 40px;
-  background: radial-gradient(circle at top, #fdf8f3, #f2faf4 45%, #e9f5ff);
+  padding: var(--space-xxl) var(--space-lg) var(--space-xl);
+  background: radial-gradient(circle at top, #fdfaf4, var(--color-page) 45%, #e9f5ff);
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -223,17 +228,17 @@ onMounted(async () => {
   width: 100%;
   margin: 0 auto;
   padding: 28px;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 24px 45px rgba(13, 70, 40, 0.08);
-  backdrop-filter: blur(12px);
+  border-radius: var(--radius-xl);
+  background: var(--color-glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(var(--glass-blur));
 }
 
 .section-title {
-  font-size: 22px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
-  color: #102a43;
+  color: var(--color-neutral-900);
   margin-bottom: 18px;
   position: relative;
   padding-left: 16px;
@@ -248,7 +253,7 @@ onMounted(async () => {
   transform: translateY(-50%);
   width: 6px;
   height: 24px;
-  background: linear-gradient(180deg, #21c47b, #12a78a);
+  background: linear-gradient(180deg, var(--color-accent), var(--color-primary));
   border-radius: 999px;
   box-shadow: 0 6px 18px rgba(33, 196, 123, 0.4);
 }
@@ -262,20 +267,20 @@ onMounted(async () => {
 }
 
 .section-more {
-  color: #0f766e;
-  font-size: 14px;
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
   padding: 8px 14px;
   border-radius: 999px;
-  background: rgba(15, 118, 110, 0.08);
+  background: rgba(31, 122, 83, 0.1);
   transition: all 0.25s ease;
 }
 
 .section-more:hover {
-  background: rgba(15, 118, 110, 0.18);
-  color: #075e54;
-  box-shadow: 0 10px 25px rgba(15, 118, 110, 0.15);
+  background: rgba(31, 122, 83, 0.18);
+  color: var(--color-primary-strong);
+  box-shadow: var(--shadow-soft);
 }
 
 .category-grid {

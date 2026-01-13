@@ -2,7 +2,10 @@
 <template>
   <div class="product-card" @click="goToDetail">
     <div class="product-image">
-      <img :src="product.image" :alt="product.productName" />
+      <picture>
+        <source v-if="product.imageWebp" :srcset="product.imageWebp" type="image/webp" />
+        <img v-lazy="product.image || product.imageWebp" :alt="product.productName" />
+      </picture>
       <div class="product-tags" v-if="product.tags && product.tags.length">
         <span 
           v-for="(tag, index) in product.tags.slice(0, 2)" 
@@ -93,11 +96,22 @@ const formatSales = (sales) => {
   overflow: hidden;
 }
 
+.product-image picture,
 .product-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s;
+  display: block;
+}
+
+.product-image img {
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s;
+}
+
+.product-image img.is-loaded {
+  opacity: 1;
 }
 
 .product-card:hover .product-image img {
@@ -138,6 +152,7 @@ const formatSales = (sales) => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  line-clamp: 2;
   line-height: 1.4;
   height: 2.8em;
 }

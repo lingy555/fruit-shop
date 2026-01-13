@@ -242,7 +242,7 @@ const handleLogin = async () => {
     }
 
     // 跳转到之前的页面或首页
-    const redirect = route.query.redirect || '/'
+    const redirect = route.query.redirect || '/home'
     router.push(redirect).catch((e) => {
       console.groupCollapsed('[Login Redirect Failed]')
       console.log('redirect:', redirect)

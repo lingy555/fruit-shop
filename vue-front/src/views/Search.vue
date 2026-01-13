@@ -102,7 +102,7 @@
         </span>
       </div>
 
-      <div class="product-grid" v-if="products.length > 0">
+      <div class="product-grid" v-if="products.length > 0 && !loading">
         <ProductCard 
           v-for="product in products" 
           :key="product.productId" 
@@ -110,8 +110,15 @@
         />
       </div>
 
+      <div class="product-grid skeleton-grid" v-else-if="loading">
+        <ProductCardSkeleton 
+          v-for="placeholder in skeletonPlaceholders"
+          :key="placeholder"
+        />
+      </div>
+
       <!-- 分页 -->
-      <div class="pagination-container" v-if="products.length > 0">
+      <div class="pagination-container" v-if="products.length > 0 && !loading">
         <el-pagination
           v-model:current-page="pagination.page"
           v-model:page-size="pagination.pageSize"
@@ -138,6 +145,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { product } from '@/api'
 import ProductCard from '@/components/product/ProductCard.vue'
+import ProductCardSkeleton from '@/components/product/ProductCardSkeleton.vue'
 import { ElMessage } from 'element-plus'
 import { usePagedList } from '@/composables/usePagedList'
 
@@ -184,6 +192,8 @@ const {
     pageSize: 20
   }
 )
+
+const skeletonPlaceholders = Array.from({ length: 8 }, (_, index) => index)
 
 // 获取热门搜索词
 const fetchHotKeywords = async () => {
@@ -429,6 +439,10 @@ onMounted(async () => {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
+}
+
+.skeleton-grid .product-card {
+  cursor: default;
 }
 
 .pagination-container {

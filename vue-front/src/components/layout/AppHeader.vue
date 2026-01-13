@@ -348,6 +348,17 @@ onMounted(() => {
   margin-bottom: 5px;
 }
 
+.cart-badge :deep(.el-badge__content) {
+  background-color: #f44336;
+  border: none;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  padding: 0 5px;
+  font-size: 12px;
+  box-shadow: 0 6px 12px rgba(244, 67, 54, 0.35);
+}
+
 .user-item {
   display: flex;
   align-items: center;

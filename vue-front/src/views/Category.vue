@@ -41,35 +41,44 @@
         </div> -->
 
         <!-- 商品列表 -->
-        <div class="product-section" v-if="products.length > 0">
-          <div class="product-grid">
-            <ProductCard 
-              v-for="product in products" 
-              :key="product.productId" 
-              :product="product"
+        <div class="product-section">
+          <div class="product-grid skeleton-grid" v-if="loading">
+            <ProductCardSkeleton 
+              v-for="placeholder in skeletonPlaceholders"
+              :key="placeholder"
             />
           </div>
 
-          <!-- 分页 -->
-          <div class="pagination-container">
-            <el-pagination
-              v-model:current-page="pagination.page"
-              v-model:page-size="pagination.pageSize"
-              :total="pagination.total"
-              :page-sizes="[20, 40, 80, 100]"
-              layout="total, sizes, prev, pager, next, jumper"
-              @size-change="handleSizeChange"
-              @current-change="handleCurrentChange"
-            />
-          </div>
+          <template v-else-if="products.length > 0">
+            <div class="product-grid">
+              <ProductCard 
+                v-for="product in products" 
+                :key="product.productId" 
+                :product="product"
+              />
+            </div>
+
+            <!-- 分页 -->
+            <div class="pagination-container">
+              <el-pagination
+                v-model:current-page="pagination.page"
+                v-model:page-size="pagination.pageSize"
+                :total="pagination.total"
+                :page-sizes="[20, 40, 80, 100]"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+              />
+            </div>
+          </template>
+
+          <!-- 空状态 -->
+          <el-empty 
+            v-else
+            description="暂无商品"
+            :image-size="200"
+          />
         </div>
-
-        <!-- 空状态 -->
-        <el-empty 
-          v-else
-          description="暂无商品"
-          :image-size="200"
-        />
       </div>
     </div>
   </div>
@@ -80,6 +89,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { product } from '@/api'
 import ProductCard from '@/components/product/ProductCard.vue'
+import ProductCardSkeleton from '@/components/product/ProductCardSkeleton.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
 const route = useRoute()
@@ -108,6 +118,8 @@ const {
     pageSize: 20
   }
 )
+
+const skeletonPlaceholders = Array.from({ length: 8 }, (_, index) => index)
 
 // 获取分类列表
 const fetchCategories = async () => {
@@ -196,8 +208,8 @@ onMounted(() => {
 <style scoped>
 .category-container {
   min-height: calc(100vh - 80px);
-  background: radial-gradient(circle at top, #fdf8f3, #f2faf4 45%, #e9f5ff);
-  padding: 50px 24px;
+  background: radial-gradient(circle at top, #fdf8f3, var(--color-page) 45%, #e4f3ff);
+  padding: var(--space-xxl) var(--space-lg);
   display: flex;
   justify-content: center;
 }
@@ -206,19 +218,19 @@ onMounted(() => {
   width: 100%;
   max-width: 1280px;
   display: flex;
-  gap: 32px;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 30px;
-  padding: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 30px 60px rgba(13, 70, 40, 0.09);
-  backdrop-filter: blur(12px);
+  gap: var(--space-xl);
+  background: var(--color-glass);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur));
 }
 
 .category-sidebar {
   width: 280px;
   flex-shrink: 0;
-  padding-right: 20px;
+  padding-right: var(--space-md);
   border-right: 1px solid rgba(15, 118, 110, 0.08);
 }
 
@@ -231,9 +243,9 @@ onMounted(() => {
 .category-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   background: rgba(248, 252, 250, 0.9);
   border: 1px solid rgba(15, 118, 110, 0.08);
   cursor: pointer;
@@ -244,8 +256,8 @@ onMounted(() => {
 
 .category-item.active {
   border-color: rgba(18, 167, 138, 0.4);
-  background: linear-gradient(135deg, rgba(32, 180, 126, 0.15), rgba(18, 167, 138, 0.05));
-  box-shadow: 0 18px 35px rgba(15, 118, 110, 0.15);
+  background: var(--gradient-mint);
+  box-shadow: var(--shadow-soft);
 }
 
 .category-item:hover {
@@ -256,7 +268,7 @@ onMounted(() => {
 .category-icon {
   width: 48px;
   height: 48px;
-  border-radius: 16px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(15, 118, 110, 0.08);
   display: flex;
@@ -272,17 +284,17 @@ onMounted(() => {
 
 .category-name {
   flex: 1;
-  font-size: 15px;
+  font-size: var(--font-size-base);
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-neutral-900);
 }
 
 .category-count {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   padding: 4px 10px;
   border-radius: 999px;
   background: rgba(15, 118, 110, 0.08);
-  color: #0f766e;
+  color: var(--color-primary);
 }
 
 .category-content {
@@ -293,21 +305,21 @@ onMounted(() => {
 
 .category-header {
   text-align: left;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
   border-bottom: 1px solid rgba(15, 118, 110, 0.08);
 }
 
 .category-header h2 {
-  font-size: 28px;
-  color: #0f172a;
+  font-size: var(--font-size-2xl);
+  color: var(--color-neutral-900);
   margin-bottom: 8px;
   letter-spacing: 0.4px;
 }
 
 .category-header p {
-  color: #475569;
-  font-size: 15px;
+  color: var(--color-neutral-500);
+  font-size: var(--font-size-base);
 }
 
 .product-section {
@@ -321,10 +333,14 @@ onMounted(() => {
   margin-bottom: 32px;
 }
 
+.skeleton-grid .product-card {
+  cursor: default;
+}
+
 .pagination-container {
   display: flex;
   justify-content: center;
-  margin-top: 12px;
+  margin-top: var(--space-sm);
 }
 
 @media (max-width: 1024px) {
@@ -343,11 +359,11 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .category-container {
-    padding: 24px 12px;
+    padding: var(--space-xl) var(--space-md);
   }
   .category-layout {
-    padding: 24px;
-    border-radius: 24px;
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
   }
   .category-list {
     flex-direction: row;
