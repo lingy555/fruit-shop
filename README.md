@@ -51,6 +51,8 @@ fruit-shop/
 
 ### 客户端
 - 用户注册、登录、密码找回
+<img width="1366" height="719" alt="image" src="https://github.com/user-attachments/assets/7a7fb182-9c47-46ba-94fe-0809ece5364c" />
+
 - 商品浏览、搜索、筛选、排序
 - 商品详情查看、规格选择、评价
 - 购物车管理、数量调整、结算
