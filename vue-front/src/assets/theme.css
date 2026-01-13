@@ -1,0 +1,72 @@
+:root {
+  /* Brand & Accents */
+  --color-primary: #1f7a53;
+  --color-primary-strong: #146040;
+  --color-primary-soft: #e0f2ea;
+  --color-secondary: #f78f1e;
+  --color-secondary-soft: #fff2e0;
+  --color-accent: #5dbb7d;
+  --color-accent-strong: #22c55e;
+  --color-danger: #f44336;
+  --color-info: #4c8bf5;
+
+  /* Neutral Scale */
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5f5;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-700: #334155;
+  --color-neutral-900: #0f172a;
+
+  /* Background & Glass */
+  --color-page: #fdfbf7;
+  --color-glass: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-shadow: 0 30px 60px rgba(13, 70, 40, 0.09);
+  --glass-blur: 16px;
+
+  /* Gradient Tokens */
+  --gradient-sunrise: linear-gradient(135deg, #7cd77b, #46b168);
+  --gradient-amber: linear-gradient(145deg, #ffd7b0, #ffb357);
+  --gradient-mint: linear-gradient(135deg, rgba(32, 180, 126, 0.15), rgba(18, 167, 138, 0.05));
+
+  /* Radius */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-xxl: 42px;
+
+  /* Shadows */
+  --shadow-soft: 0 12px 30px rgba(15, 118, 110, 0.12);
+  --shadow-card: 0 18px 35px rgba(15, 118, 110, 0.15);
+  --shadow-elevated: 0 40px 60px rgba(23, 109, 75, 0.18);
+  --shadow-pill: 0 12px 24px rgba(70, 177, 104, 0.25);
+
+  /* Spacing Scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+
+  /* Typography */
+  --font-family-display: 'ZCOOL KuaiLe', 'Ma Shan Zheng', 'PingFang SC', 'Segoe UI', sans-serif;
+  --font-family-base: 'Inter', 'PingFang SC', 'Segoe UI', sans-serif;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 22px;
+  --font-size-2xl: 28px;
+  --font-size-3xl: 36px;
+
+  /* Motion */
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.45s ease;
+}

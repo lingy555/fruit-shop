@@ -391,6 +391,29 @@
         :rules="profileRules"
         label-width="80px"
       >
+        <el-form-item label="头像">
+          <div class="avatar-upload">
+            <el-upload
+              class="avatar-uploader"
+              :action="uploadUrl"
+              :headers="uploadHeaders"
+              name="file"
+              :show-file-list="false"
+              :on-success="handleAvatarSuccess"
+              :on-error="handleAvatarError"
+              :before-upload="beforeAvatarUpload"
+            >
+              <img v-if="profileForm.avatar" :src="profileForm.avatar" class="avatar-preview" alt="avatar" />
+              <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+            </el-upload>
+            <div class="avatar-tips">支持 jpg/png，最大2MB</div>
+            <div class="avatar-url-row">
+              <el-input v-model="avatarUrlInput" placeholder="或粘贴头像链接" clearable />
+              <el-button size="small" type="primary" @click="applyAvatarUrl">使用链接</el-button>
+            </div>
+          </div>
+        </el-form-item>
+
         <el-form-item label="昵称" prop="nickname">
           <el-input v-model="profileForm.nickname" placeholder="请输入昵称" />
         </el-form-item>
@@ -532,13 +555,16 @@
           <el-input v-model="addressForm.receiverPhone" placeholder="请输入手机号" />
         </el-form-item>
 
-        <el-form-item label="地区" prop="region">
-          <el-cascader
-            v-model="addressForm.region"
-            :options="regionOptions"
-            placeholder="请选择省市区"
-            clearable
-          />
+        <el-form-item label="省/直辖市" prop="province">
+          <el-input v-model="addressForm.province" placeholder="如：广东省" />
+        </el-form-item>
+
+        <el-form-item label="城市" prop="city">
+          <el-input v-model="addressForm.city" placeholder="如：深圳市" />
+        </el-form-item>
+
+        <el-form-item label="区/县" prop="district">
+          <el-input v-model="addressForm.district" placeholder="如：南山区" />
         </el-form-item>
 
         <el-form-item label="详细地址" prop="detail">
@@ -611,9 +637,55 @@ import { useRouter } from 'vue-router'
 import { user, order, coupon, address } from '@/api'
 import { useUserStore } from '@/store/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
+
+// 上传相关
+const uploadUrl = `${import.meta.env.VITE_BASE_API || '/api'}/upload`
+const uploadHeaders = computed(() => ({
+  Authorization: userStore.token ? `Bearer ${userStore.token}` : undefined
+}))
+
+const beforeAvatarUpload = (file) => {
+  const isImage = file.type.startsWith('image/')
+  const isLt2M = file.size / 1024 / 1024 < 2
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件')
+    return false
+  }
+  if (!isLt2M) {
+    ElMessage.error('图片大小不能超过2MB')
+    return false
+  }
+  return true
+}
+
+const handleAvatarSuccess = (res) => {
+  const url = res?.data?.url || res?.url
+  if (!url) {
+    ElMessage.error('上传失败：未返回地址')
+    return
+  }
+  profileForm.avatar = url
+  ElMessage.success('上传成功')
+}
+
+const handleAvatarError = () => {
+  ElMessage.error('上传失败')
+}
+
+// 头像 URL 输入（备用方式）
+const avatarUrlInput = ref('')
+const applyAvatarUrl = () => {
+  if (!avatarUrlInput.value) {
+    ElMessage.error('请输入头像链接')
+    return
+  }
+  profileForm.avatar = avatarUrlInput.value.trim()
+  ElMessage.success('已使用头像链接')
+}
 
 // 当前激活的菜单
 const activeMenu = ref('profile')
@@ -683,6 +755,7 @@ const rechargeFormRef = ref(null)
 
 // 个人信息表单
 const profileForm = reactive({
+  avatar: '',
   nickname: '',
   gender: 0,
   birthday: '',
@@ -972,6 +1045,7 @@ const handleMenuSelect = (index) => {
 // 显示个人信息对话框
 const showProfileDialog = () => {
   // 填充表单
+  profileForm.avatar = userInfo.value.avatar || ''
   profileForm.nickname = userInfo.value.nickname || ''
   profileForm.gender = userInfo.value.gender || 0
   profileForm.birthday = userInfo.value.birthday || ''
@@ -983,6 +1057,7 @@ const showProfileDialog = () => {
 // 重置个人信息表单
 const resetProfileForm = () => {
   Object.assign(profileForm, {
+    avatar: '',
     nickname: '',
     gender: 0,
     birthday: '',
@@ -1001,6 +1076,7 @@ const saveProfile = async () => {
   profileSaving.value = true
   try {
     await user.updateProfile({
+      avatar: profileForm.avatar,
       nickname: profileForm.nickname,
       gender: profileForm.gender,
       birthday: profileForm.birthday,
@@ -1008,10 +1084,18 @@ const saveProfile = async () => {
     })
 
     // 更新本地用户信息
+    userInfo.value.avatar = profileForm.avatar
     userInfo.value.nickname = profileForm.nickname
     userInfo.value.gender = profileForm.gender
     userInfo.value.birthday = profileForm.birthday
     userInfo.value.email = profileForm.email
+    if (userStore.userInfo) {
+      userStore.userInfo = {
+        ...userStore.userInfo,
+        avatar: profileForm.avatar,
+        nickname: profileForm.nickname
+      }
+    }
 
     profileDialogVisible.value = false
     ElMessage.success('保存成功')
